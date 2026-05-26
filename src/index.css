@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   CONFIGURAÇÕES GLOBAIS DE DESIGN
+   ========================================================================== */
+@layer base {
+  body {
+    background-color: #060213 !important;
+    color: #f3f4f6;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #060213;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #22d3ee, #a855f7);
+    border-radius: 20px;
+  }
+}
+
+/* ==========================================================================
+   EFEITOS VISUAIS E CORREÇÃO DE EIXO DA SIDEBAR
+   ========================================================================== */
+@layer components {
+  
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.02) !important;
+    backdrop-filter: blur(25px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .neon-card-glow {
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  /* Borda neon com largura fixa para evitar deformações laterais */
+  .neon-card-glow::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: linear-gradient(
+      to bottom right, 
+      transparent 50%, 
+      rgba(34, 211, 238, 0.15), 
+      rgba(168, 85, 247, 0.25)
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    transition: background 0.3s ease;
+  }
+
+  .neon-card-glow:hover::before {
+    background: linear-gradient(to bottom right, #22d3ee, #a855f7) !important;
+  }
+
+  /* FORÇAR EXIBIÇÃO DO ÍCONE: Garante que os ícones do Lucide nunca encolham para zero */
+  .neon-card-glow svg {
+    flex-shrink: 0 !important;
+    display: block !important;
+  }
+
+  /* ==========================================================================
+     ANIMAÇÕES DE FUNDO
+     ========================================================================== */
+  @keyframes pulseGlow1 {
+    0%, 100% { transform: scale(1); opacity: 0.15; filter: blur(120px); }
+    50% { transform: scale(1.15) translate(30px, -20px); opacity: 0.25; filter: blur(140px); }
+  }
+
+  @keyframes pulseGlow2 {
+    0%, 100% { transform: scale(1); opacity: 0.08; filter: blur(130px); }
+    50% { transform: scale(1.2) translate(-40px, 40px); opacity: 0.18; filter: blur(160px); }
+  }
+
+  .ambient-glow-1 { animation: pulseGlow1 12s ease-in-out infinite; }
+  .ambient-glow-2 { animation: pulseGlow2 16s ease-in-out infinite alternate; }
+}
