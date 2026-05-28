@@ -1,13 +1,16 @@
 import React from 'react';
-import { User, Mail, Calendar, ArrowLeft, LogOut } from 'lucide-react';
+import { User, Mail, Calendar, ArrowLeft, LogOut, CreditCard } from 'lucide-react';
 
-export default function UserProfile({ user, onClose, onLogout }) {
+export default function UserProfile({ user, onClose, onLogout, onNavigateToPlans }) {
   if (!user) return null;
+
+  // Trata o plano padrão se não houver um definido
+  const activePlan = user.plan || 'Premium';
 
   return (
     <div className="max-w-2xl mx-auto bg-[#0d091f]/60 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-3xl shadow-2xl animate-fadeIn">
       
-      {/* Cabeçalho com botão para voltar */}
+      {/* Cabeçalho */}
       <div className="flex items-center gap-4 mb-8">
         <button 
           onClick={onClose}
@@ -24,13 +27,25 @@ export default function UserProfile({ user, onClose, onLogout }) {
           <User size={44} className="text-slate-950" />
         </div>
         
-        <div>
+        <div className="flex-1">
           <h3 className="text-3xl font-black text-white tracking-tight mb-1">{user.name}</h3>
-          <p className="text-cyan-400 font-semibold text-sm tracking-wider uppercase">Plano Premium Ativo</p>
+          
+          {/* Layout dinâmico baseado na imagem e atualizável */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
+            <p className="text-cyan-400 font-semibold text-sm tracking-wider uppercase">
+              PLANO {activePlan} ATIVO
+            </p>
+            <button
+              onClick={onNavigateToPlans}
+              className="text-[11px] font-bold text-purple-400 hover:text-purple-300 underline underline-offset-4 cursor-pointer transition-colors text-center sm:text-left"
+            >
+              (Alterar Plano)
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Grid com Informações de Detalhe */}
+      {/* Grid com Informações */}
       <div className="space-y-4 mb-8">
         <div className="flex items-center gap-4 bg-[#060213]/60 border border-white/5 p-4 rounded-xl">
           <Mail className="text-purple-400" size={20} />
@@ -41,15 +56,15 @@ export default function UserProfile({ user, onClose, onLogout }) {
         </div>
 
         <div className="flex items-center gap-4 bg-[#060213]/60 border border-white/5 p-4 rounded-xl">
-          <Calendar className="text-cyan-400" size={20} />
+          <CreditCard className="text-cyan-400" size={20} />
           <div>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Status da Assinatura</p>
-            <p className="text-white text-sm font-medium mt-0.5">Renovação Automática via LocalStorage</p>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Método de Assinatura</p>
+            <p className="text-white text-sm font-medium mt-0.5">Sincronizado via LocalStorage</p>
           </div>
         </div>
       </div>
 
-      {/* BOTÃO SAIR INTEGRADO: Alinhado e seguro no final da área de perfil */}
+      {/* Botão Sair */}
       <button
         onClick={onLogout}
         className="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold text-sm tracking-wider uppercase py-3 px-4 border border-red-500/20 hover:border-red-500/30 rounded-2xl transition-all cursor-pointer shadow-lg"

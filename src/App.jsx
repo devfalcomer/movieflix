@@ -5,7 +5,8 @@ import MediaGrid from './components/MediaGrid';
 import MediaDetails from './components/MediaDetails';
 import Login from './components/Login';
 import Register from './components/Register';
-import UserProfile from './components/UserProfile'; // Importando a nova tela de Perfil
+import UserProfile from './components/UserProfile';
+import Plans from './components/Plans'; // Importando a tela de Planos
 import { getTrending, getMovies, getSeries } from './services/tmdb';
 import './App.css';
 
@@ -16,15 +17,13 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [selectedMedia, setSelectedMedia] = useState(null);
   
-  // ESTADOS DE AUTENTICAÇÃO
   const [currentUser, setCurrentUser] = useState(null);
   const [authScreen, setAuthScreen] = useState('login');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  // NOVO ESTADO: Controla a exibição do Perfil
   const [showProfile, setShowProfile] = useState(false);
+  const [showPlans, setShowPlans] = useState(false); // NOVO ESTADO
 
-  // Mantém a sessão ativa se o usuário recarregar a página
   useEffect(() => {
     const loggedUser = localStorage.getItem('movieflix_logged_user');
     if (loggedUser) {
@@ -32,10 +31,10 @@ export default function App() {
     }
   }, []);
 
-  // Reseta os detalhes e fecha o perfil ao navegar pelas abas da Sidebar
   useEffect(() => {
     setSelectedMedia(null);
     setShowProfile(false);
+    setShowPlans(false); // Reseta ao mudar de aba
   }, [activeTab]);
 
   useEffect(() => {
@@ -80,9 +79,16 @@ export default function App() {
     localStorage.removeItem('movieflix_logged_user');
     setAuthScreen('login');
     setShowProfile(false);
+    setShowPlans(false);
   };
 
-  // 1. SPLASH SCREEN PÓS-LOGIN
+  // NOVA FUNÇÃO: Altera o plano, atualiza o estado e sincroniza o LocalStorage
+  const handleUpdatePlan = (newPlan) => {
+    const updatedUser = { ...currentUser, plan: newPlan };
+    setCurrentUser(updatedUser);
+    localStorage.setItem('movieflix_logged_user', JSON.stringify(updatedUser));
+  };
+
   if (isLoggingIn) {
     return (
       <div className="min-h-screen bg-[#060213] text-gray-100 flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">
@@ -104,7 +110,6 @@ export default function App() {
     );
   }
 
-  // 2. FLUXO DE AUTENTICAÇÃO
   if (!currentUser) {
     if (authScreen === 'register') {
       return <Register onNavigateToLogin={() => setAuthScreen('login')} />;
@@ -117,29 +122,42 @@ export default function App() {
     );
   }
 
-  // 3. HOME DO SISTEMA (LOGADO)
   return (
     <div className="min-h-screen bg-[#060213] text-gray-100 antialiased font-sans overflow-x-hidden selection:bg-cyan-500 selection:text-slate-950 relative">
       <div className="absolute top-[-10%] left-[-5%] w-[80vw] md:w-[60vw] h-[80vw] md:h-[60vw] rounded-full bg-purple-600/10 ambient-glow-1 pointer-events-none z-0" />
       <div className="absolute bottom-[10%] right-[-10%] w-[70vw] md:w-[50vw] h-[70vw] md:h-[50vw] rounded-full bg-cyan-600/5 ambient-glow-2 pointer-events-none z-0" />
 
-      {/* Sidebar integrada */}
       <Sidebar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
         onProfileClick={() => {
           setSelectedMedia(null);
+          setShowPlans(false);
           setShowProfile(true);
         }}
       />
 
       <main className="px-4 md:pl-36 md:pr-16 pt-4 md:pt-8 pb-24 md:pb-16 min-h-screen max-w-[1700px] mx-auto relative z-10 transition-all duration-300">
         
-        {showProfile ? (
+        {/* Controle de fluxo condicional expandido para incluir a tela de planos */}
+        {showPlans ? (
+          <Plans 
+            currentPlan={currentUser.plan || 'Premium'} 
+            onSelectPlan={handleUpdatePlan} 
+            onClose={() => {
+              setShowPlans(false);
+              setShowProfile(true);
+            }} 
+          />
+        ) : showProfile ? (
           <UserProfile 
             user={currentUser} 
             onClose={() => setShowProfile(false)} 
-            onLogout={handleLogout} 
+            onLogout={handleLogout}
+            onNavigateToPlans={() => {
+              setShowProfile(false);
+              setShowPlans(true);
+            }} 
           />
         ) : loading ? (
           <div className="h-[80vh] w-full flex items-center justify-center">
@@ -150,7 +168,6 @@ export default function App() {
           </div>
         ) : (
           <>
-            {/* O catálogo (Hero e Grid) fica renderizado permanentemente aqui, segurando o seu scroll original */}
             <Hero 
               item={heroItem} 
               onDetailsClick={(media) => setSelectedMedia(media)} 
@@ -163,9 +180,8 @@ export default function App() {
                 activeTab === 'movies' ? 'Filmes Selecionados' : 'Séries Recomendadas'
               }
               onMediaClick={(media) => setSelectedMedia(media)} 
-            />
+                />
 
-            {/* MODAL FIXO DE DETALHES: Renderiza por cima da tela sem destruir a lista que está atrás */}
             {selectedMedia && (
               <div className="fixed inset-0 z-50 overflow-y-auto bg-[#060213] px-4 md:pl-36 md:pr-16 pt-4 md:pt-8 pb-24 md:pb-16 animate-fadeIn">
                 <MediaDetails 
