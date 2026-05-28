@@ -5,8 +5,9 @@ import MediaGrid from './components/MediaGrid';
 import MediaDetails from './components/MediaDetails';
 import Login from './components/Login';
 import Register from './components/Register';
+import UserProfile from './components/UserProfile'; // Importando a nova tela de Perfil
 import { getTrending, getMovies, getSeries } from './services/tmdb';
-import './App.css'; // IMPORTANTE: Importando a animação da barra de progresso
+import './App.css';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('trending');
@@ -18,11 +19,12 @@ export default function App() {
   // ESTADOS DE AUTENTICAÇÃO
   const [currentUser, setCurrentUser] = useState(null);
   const [authScreen, setAuthScreen] = useState('login');
-  
-  // Controla o estado de exibição da Splash Screen pós-login
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  // Mantém a sessão se o usuário recarregar a página
+  // NOVO ESTADO: Controla a exibição do Perfil
+  const [showProfile, setShowProfile] = useState(false);
+
+  // Mantém a sessão ativa se o usuário recarregar a página
   useEffect(() => {
     const loggedUser = localStorage.getItem('movieflix_logged_user');
     if (loggedUser) {
@@ -30,9 +32,10 @@ export default function App() {
     }
   }, []);
 
-  // Reseta os detalhes ao navegar pelas abas da Sidebar
+  // Reseta os detalhes e fecha o perfil ao navegar pelas abas da Sidebar
   useEffect(() => {
     setSelectedMedia(null);
+    setShowProfile(false);
   }, [activeTab]);
 
   useEffect(() => {
@@ -64,9 +67,7 @@ export default function App() {
   }, [activeTab, currentUser, isLoggingIn]);
 
   const handleLoginSuccess = (user) => {
-    setIsLoggingIn(true); // Ativa a tela de Splash Screen
-    
-    // Aguarda 2.5 segundos com o efeito visual antes de destravar o catálogo
+    setIsLoggingIn(true);
     setTimeout(() => {
       setCurrentUser(user);
       localStorage.setItem('movieflix_logged_user', JSON.stringify(user));
@@ -78,9 +79,10 @@ export default function App() {
     setCurrentUser(null);
     localStorage.removeItem('movieflix_logged_user');
     setAuthScreen('login');
+    setShowProfile(false);
   };
 
-  // 1. RENDERIZAÇÃO DA TELA DE CARREGAMENTO PÓS-LOGIN (Splash Screen)
+  // 1. SPLASH SCREEN PÓS-LOGIN
   if (isLoggingIn) {
     return (
       <div className="min-h-screen bg-[#060213] text-gray-100 flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">
@@ -91,12 +93,9 @@ export default function App() {
           <h1 className="text-5xl font-black tracking-tighter text-white drop-shadow-[0_0_35px_rgba(34,211,238,0.3)]">
             Movie<span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">Flix</span>
           </h1>
-          
           <p className="text-gray-400 text-sm tracking-widest uppercase font-bold animate-pulse">
             Preparando seu catálogo personalizado...
           </p>
-
-          {/* Container da Barra com a animação vinda do App.css */}
           <div className="w-48 h-[4px] bg-white/5 rounded-full mx-auto overflow-hidden border border-white/5 relative">
             <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-cyan-400 to-purple-500 rounded-full w-full animate-loadingBar" />
           </div>
@@ -105,7 +104,7 @@ export default function App() {
     );
   }
 
-  // 2. FLUXO DE AUTENTICAÇÃO (Se não estiver logado)
+  // 2. FLUXO DE AUTENTICAÇÃO
   if (!currentUser) {
     if (authScreen === 'register') {
       return <Register onNavigateToLogin={() => setAuthScreen('login')} />;
@@ -118,13 +117,21 @@ export default function App() {
     );
   }
 
-  // 3. HOME DO SISTEMA (Se logado com sucesso)
+  // 3. HOME DO SISTEMA (LOGADO)
   return (
     <div className="min-h-screen bg-[#060213] text-gray-100 antialiased font-sans overflow-x-hidden selection:bg-cyan-500 selection:text-slate-950 relative">
       <div className="absolute top-[-10%] left-[-5%] w-[80vw] md:w-[60vw] h-[80vw] md:h-[60vw] rounded-full bg-purple-600/10 ambient-glow-1 pointer-events-none z-0" />
       <div className="absolute bottom-[10%] right-[-10%] w-[70vw] md:w-[50vw] h-[70vw] md:h-[50vw] rounded-full bg-cyan-600/5 ambient-glow-2 pointer-events-none z-0" />
 
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      {/* Sidebar atualizada com a propriedade de clique no Perfil */}
+      <Sidebar 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        onProfileClick={() => {
+          setSelectedMedia(null); // Fecha modal de mídia se estiver aberto
+          setShowProfile(true);   // Exibe os dados do usuário
+        }}
+      />
 
       <button 
         onClick={handleLogout}
@@ -134,7 +141,14 @@ export default function App() {
       </button>
 
       <main className="px-4 md:pl-36 md:pr-16 pt-4 md:pt-8 pb-24 md:pb-16 min-h-screen max-w-[1700px] mx-auto relative z-10 transition-all duration-300">
-        {loading ? (
+        
+        {/* Nova Condicional: Se o perfil estiver ativo, exibe a tela de Perfil. Caso contrário, segue o fluxo normal */}
+        {showProfile ? (
+          <UserProfile 
+            user={currentUser} 
+            onClose={() => setShowProfile(false)} 
+          />
+        ) : loading ? (
           <div className="h-[80vh] w-full flex items-center justify-center">
             <div className="relative w-14 h-14">
               <div className="absolute inset-0 border-4 border-cyan-500/10 rounded-full"></div>

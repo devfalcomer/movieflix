@@ -1,65 +1,63 @@
 import React from 'react';
-import { Film, Tv, TrendingUp } from 'lucide-react';
+import { TrendingUp, Film, Tv, User } from 'lucide-react';
 
-export default function Sidebar({ activeTab, setActiveTab }) {
-  const menuItems = [
-    { id: 'trending', label: 'Tendências', icon: TrendingUp },
-    { id: 'movies', label: 'Filmes', icon: Film },
-    { id: 'series', label: 'Séries', icon: Tv },
-  ];
-
+export default function Sidebar({ activeTab, setActiveTab, onProfileClick }) {
   return (
-    /* Ajustado o padding horizontal da própria barra (px-2 no desktop) para o CINE não cortar */
-    <div className="fixed bottom-4 left-4 right-4 md:right-auto md:left-6 md:top-1/2 md:-translate-y-1/2 w-[calc(100%-2rem)] md:w-20 md:hover:w-64 h-16 md:h-[80vh] glass-effect rounded-2xl md:rounded-3xl flex md:flex-col items-center justify-between px-6 md:px-2 py-2 md:py-8 transition-all duration-300 ease-in-out z-50 group shadow-2xl">
+    <aside className="fixed bottom-0 left-0 w-full md:w-28 h-16 md:h-screen bg-[#0d091f]/90 backdrop-blur-xl border-t md:border-t-0 md:border-r border-white/10 z-40 grid grid-cols-4 md:flex md:flex-col items-center justify-items-center md:justify-start md:py-8 gap-0 md:gap-6 transition-all duration-300 px-2 md:px-0">
       
-      {/* CORREÇÃO DO CINE: w-full e text-center garantem centralização sem quebrar letras */}
-      <div className="hidden md:block text-lg font-black bg-gradient-to-r from-cyan-400 to-purple-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform tracking-widest w-full text-center select-none">
+      {/* Logo: visível apenas no desktop */}
+      <div className="hidden md:block text-xl font-black tracking-wider text-white mb-4">
         CINE
       </div>
-      
-      {/* Menu Principal */}
-      <nav className="flex md:flex-col justify-around md:justify-center gap-2 md:gap-5 w-full px-1">
-        {menuItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeTab === item.id;
-          
-          return (
-            <div
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`neon-card-glow w-full h-12 md:h-13 rounded-xl md:rounded-2xl flex items-center justify-center md:justify-start cursor-pointer transition-all duration-300 overflow-hidden
-                ${isActive 
-                  ? 'bg-gradient-to-r from-cyan-500/15 to-purple-500/15 text-cyan-400 border border-cyan-500/30 shadow-[0_0_20px_rgba(34,211,238,0.1)]' 
-                  : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
-                }
-              `}
-            >
-              {/* CORREÇÃO DOS ÍCONES: 
-                Alinhamento por flexbox puro. No desktop estático, o container do ícone centraliza perfeitamente 
-                na largura total disponível sem amassar o Lucide Icon.
-              */}
-              <div className="flex items-center justify-center md:justify-start w-full h-full px-3 md:px-0 md:group-hover:pl-5 transition-all duration-300">
-                
-                {/* Elemento que envelopa o ícone e força ele a ficar estável no meio da barra de 80px */}
-                <div className="flex items-center justify-center md:w-14 group-hover:md:w-6 shrink-0 transition-all duration-300">
-                  <Icon size={22} />
-                </div>
-                
-                {/* O texto desliza de volta para a tela sem criar orelhas */}
-                <span className="hidden md:block opacity-0 group-hover:opacity-100 ml-3 transition-all duration-300 font-semibold whitespace-nowrap text-sm tracking-wide">
-                  {item.label}
-                </span>
 
-              </div>
-            </div>
-          );
-        })}
-      </nav>
+      {/* Botão: Tendências */}
+      <button
+        onClick={() => setActiveTab('trending')}
+        className={`flex flex-col items-center justify-center rounded-xl w-full max-w-[70px] md:w-16 h-12 md:h-16 transition-all duration-300 cursor-pointer ${
+          activeTab === 'trending'
+            ? 'bg-gradient-to-br from-cyan-500/20 to-blue-500/10 border border-cyan-500/30 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]'
+            : 'text-gray-400 hover:text-gray-200 hover:bg-white/5 border border-transparent'
+        }`}
+      >
+        <TrendingUp size={18} className="md:w-[20px] md:h-[20px] flex-shrink-0" />
+        <span className="text-[9px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-wide block truncate">Tendências</span>
+      </button>
 
-      {/* Versão do App */}
-      <div className="hidden md:block text-gray-600 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity font-mono w-full text-center">
-        v1.0
-      </div>
-    </div>
+      {/* Botão: Filmes */}
+      <button
+        onClick={() => setActiveTab('movies')}
+        className={`flex flex-col items-center justify-center rounded-xl w-full max-w-[70px] md:w-16 h-12 md:h-16 transition-all duration-300 cursor-pointer ${
+          activeTab === 'movies'
+            ? 'bg-gradient-to-br from-cyan-500/20 to-blue-500/10 border border-cyan-500/30 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]'
+            : 'text-gray-400 hover:text-gray-200 hover:bg-white/5 border border-transparent'
+        }`}
+      >
+        <Film size={18} className="md:w-[20px] md:h-[20px] flex-shrink-0" />
+        <span className="text-[9px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-wide block truncate">Filmes</span>
+      </button>
+
+      {/* Botão: Séries */}
+      <button
+        onClick={() => setActiveTab('series')}
+        className={`flex flex-col items-center justify-center rounded-xl w-full max-w-[70px] md:w-16 h-12 md:h-16 transition-all duration-300 cursor-pointer ${
+          activeTab === 'series'
+            ? 'bg-gradient-to-br from-cyan-500/20 to-blue-500/10 border border-cyan-500/30 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]'
+            : 'text-gray-400 hover:text-gray-200 hover:bg-white/5 border border-transparent'
+        }`}
+      >
+        <Tv size={18} className="md:w-[20px] md:h-[20px] flex-shrink-0" />
+        <span className="text-[9px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-wide block truncate">Séries</span>
+      </button>
+
+      {/* Botão: Perfil */}
+      <button
+        onClick={onProfileClick}
+        className="flex flex-col items-center justify-center rounded-xl w-full max-w-[70px] md:w-16 h-12 md:h-16 transition-all duration-300 cursor-pointer md:mt-auto text-gray-400 hover:text-cyan-400 hover:bg-white/5 border border-transparent"
+      >
+        <User size={18} className="md:w-[20px] md:h-[20px] flex-shrink-0" />
+        <span className="text-[9px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-wide block truncate">Perfil</span>
+      </button>
+
+    </aside>
   );
 }
