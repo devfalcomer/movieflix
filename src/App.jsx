@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import Hero from './components/Hero';
 import MediaGrid from './components/MediaGrid';
-import MediaDetails from './components/MediaDetails'; // Certifique-se de criar este componente
+import MediaDetails from './components/MediaDetails';
+import Login from './components/Login';
+import Register from './components/Register';
 import { getTrending, getMovies, getSeries } from './services/tmdb';
 
 export default function App() {
@@ -10,7 +12,19 @@ export default function App() {
   const [data, setData] = useState([]);
   const [heroItem, setHeroItem] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectedMedia, setSelectedMedia] = useState(null); // Nova funcionalidade: Estado para a mídia selecionada
+  const [selectedMedia, setSelectedMedia] = useState(null);
+  
+  // ESTADOS DE AUTENTICAÇÃO
+  const [currentUser, setCurrentUser] = useState(null);
+  const [authScreen, setAuthScreen] = useState('login'); // 'login' ou 'register'
+
+  // Mantém o usuário logado ao recarregar a página
+  useEffect(() => {
+    const loggedUser = localStorage.getItem('movieflix_logged_user');
+    if (loggedUser) {
+      setCurrentUser(JSON.parse(loggedUser));
+    }
+  }, []);
 
   // Reseta os detalhes caso o usuário mude de aba na Sidebar
   useEffect(() => {
@@ -18,6 +32,9 @@ export default function App() {
   }, [activeTab]);
 
   useEffect(() => {
+    // Só busca dados da API do TMDB se o usuário estiver logado
+    if (!currentUser) return;
+
     const fetchData = async () => {
       setLoading(true);
       try {
@@ -41,8 +58,33 @@ export default function App() {
     };
 
     fetchData();
-  }, [activeTab]);
+  }, [activeTab, currentUser]);
 
+  const handleLoginSuccess = (user) => {
+    setCurrentUser(user);
+    localStorage.setItem('movieflix_logged_user', JSON.stringify(user));
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('movieflix_logged_user');
+    setAuthScreen('login');
+  };
+
+  // FLUXO DE TELAS DE AUTENTICAÇÃO (Se não estiver logado)
+  if (!currentUser) {
+    if (authScreen === 'register') {
+      return <Register onNavigateToLogin={() => setAuthScreen('login')} />;
+    }
+    return (
+      <Login 
+        onLoginSuccess={handleLoginSuccess} 
+        onNavigateToRegister={() => setAuthScreen('register')} 
+      />
+    );
+  }
+
+  // TELA PRINCIPAL (Se estiver logado)
   return (
     <div className="min-h-screen bg-[#060213] text-gray-100 antialiased font-sans overflow-x-hidden selection:bg-cyan-500 selection:text-slate-950 relative">
       
@@ -53,10 +95,14 @@ export default function App() {
       {/* Navegação Flutuante Lateral / Inferior */}
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      {/* Responsividade aplicada no Main:
-        - Mobile: px-4 pt-4 pb-24 (espaço extra embaixo para não cobrir o menu inferior).
-        - Desktop (md:): pl-36 pr-16 pt-8 (recua para o lado da sidebar).
-      */}
+      {/* Botão de Logout Flutuante (Opcional - útil no topo direito) */}
+      <button 
+        onClick={handleLogout}
+        className="absolute top-6 right-6 z-50 bg-white/5 hover:bg-red-500/20 text-gray-400 hover:text-red-400 px-4 py-2 border border-white/10 hover:border-red-500/20 rounded-xl text-xs font-bold tracking-wider transition-all cursor-pointer shadow-lg"
+      >
+        SAIR
+      </button>
+
       <main className="px-4 md:pl-36 md:pr-16 pt-4 md:pt-8 pb-24 md:pb-16 min-h-screen max-w-[1700px] mx-auto relative z-10 transition-all duration-300">
         
         {loading ? (
@@ -76,7 +122,7 @@ export default function App() {
               />
             ) : (
               <>
-                {/* Banner Premium atualizado com o evento para abrir os detalhes */}
+                {/* Banner Premium */}
                 <Hero 
                   item={heroItem} 
                   onDetailsClick={(media) => setSelectedMedia(media)} 
@@ -89,7 +135,7 @@ export default function App() {
                     activeTab === 'trending' ? 'Tendências Globais' :
                     activeTab === 'movies' ? 'Filmes Selecionados' : 'Séries Recomendadas'
                   }
-                  onMediaClick={(media) => setSelectedMedia(media)} // Nova funcionalidade passará para o MediaGrid
+                  onMediaClick={(media) => setSelectedMedia(media)} 
                 />
               </>
             )}
