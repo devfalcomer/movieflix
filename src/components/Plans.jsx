@@ -1,8 +1,16 @@
 import React from 'react';
-import { ArrowLeft, Check, Sparkles, Shield, Zap } from 'lucide-react';
+import { ArrowLeft, Check, Sparkles, Shield, Zap, EyeOff } from 'lucide-react';
 
 export default function Plans({ currentPlan, onSelectPlan, onClose }) {
   const plansList = [
+    {
+      id: 'Gratuito',
+      name: 'Plano Gratuito',
+      price: 'Grátis',
+      icon: <EyeOff className="text-gray-500" size={28} />,
+      features: ['Acesso a 1 tela', 'Qualidade Baixa (SD)', 'Contém muitos anúncios'],
+      color: 'border-gray-500/20 hover:border-gray-400/40'
+    },
     {
       id: 'Bronze',
       name: 'Plano Bronze',
@@ -30,7 +38,7 @@ export default function Plans({ currentPlan, onSelectPlan, onClose }) {
   ];
 
   return (
-    <div className="max-w-4xl mx-auto bg-[#0d091f]/60 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-3xl shadow-2xl animate-fadeIn">
+    <div className="max-w-5xl mx-auto bg-[#0d091f]/60 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-3xl shadow-2xl animate-fadeIn">
       {/* Cabeçalho */}
       <div className="flex items-center gap-4 mb-8">
         <button 
@@ -45,15 +53,15 @@ export default function Plans({ currentPlan, onSelectPlan, onClose }) {
         </div>
       </div>
 
-      {/* Grid de Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Grid de Cards (Ajustado para 4 colunas no desktop) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {plansList.map((plan) => {
-          const isCurrent = currentPlan === plan.id || (!currentPlan && plan.id === 'Premium');
+          const isCurrent = currentPlan === plan.id;
           
           return (
             <div 
               key={plan.id}
-              className={`relative flex flex-col justify-between p-6 rounded-2xl bg-[#060213]/80 border-2 transition-all duration-300 ${plan.color} ${
+              className={`relative flex flex-col justify-between p-5 rounded-2xl bg-[#060213]/80 border-2 transition-all duration-300 ${plan.color} ${
                 isCurrent ? 'border-cyan-400 shadow-[0_0_25px_rgba(34,211,238,0.15)] bg-[#0c0722]' : ''
               }`}
             >
@@ -65,18 +73,21 @@ export default function Plans({ currentPlan, onSelectPlan, onClose }) {
 
               <div>
                 <div className="flex justify-between items-start mb-4">
-                  <div className="p-2.5 bg-white/5 rounded-xl border border-white/5">
+                  <div className="p-2 bg-white/5 rounded-xl border border-white/5">
                     {plan.icon}
                   </div>
-                  <span className="text-2xl font-black text-white">{plan.price}<span className="text-xs text-gray-400 font-normal">/mês</span></span>
+                  <div className="text-right">
+                    <span className="text-xl font-black text-white block">{plan.price}</span>
+                    {plan.id !== 'Gratuito' && <span className="text-[10px] text-gray-400 font-normal">/mês</span>}
+                  </div>
                 </div>
 
-                <h3 className="text-lg font-bold text-white mb-4">{plan.name}</h3>
+                <h3 className="text-base font-bold text-white mb-3">{plan.name}</h3>
 
-                <ul className="space-y-2.5 mb-6">
+                <ul className="space-y-2 mb-6">
                   {plan.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-xs text-gray-300">
-                      <Check size={14} className="text-cyan-400 mt-0.5 shrink-0" />
+                    <li key={idx} className="flex items-start gap-2 text-[11px] text-gray-300">
+                      <Check size={13} className="text-cyan-400 mt-0.5 shrink-0" />
                       <span>{feature}</span>
                     </li>
                   ))}
@@ -86,7 +97,7 @@ export default function Plans({ currentPlan, onSelectPlan, onClose }) {
               <button
                 disabled={isCurrent}
                 onClick={() => onSelectPlan(plan.id)}
-                className={`w-full py-2.5 rounded-xl text-xs font-bold tracking-wider uppercase transition-all cursor-pointer ${
+                className={`w-full py-2 rounded-xl text-[11px] font-bold tracking-wider uppercase transition-all cursor-pointer ${
                   isCurrent 
                     ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' 
                     : 'bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20'

@@ -6,7 +6,7 @@ import MediaDetails from './components/MediaDetails';
 import Login from './components/Login';
 import Register from './components/Register';
 import UserProfile from './components/UserProfile';
-import Plans from './components/Plans'; // Importando a tela de Planos
+import Plans from './components/Plans'; 
 import { getTrending, getMovies, getSeries } from './services/tmdb';
 import './App.css';
 
@@ -17,13 +17,16 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [selectedMedia, setSelectedMedia] = useState(null);
   
+  // ESTADOS DE AUTENTICAÇÃO
   const [currentUser, setCurrentUser] = useState(null);
   const [authScreen, setAuthScreen] = useState('login');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
+  // ESTADOS DE NAVEGAÇÃO DE TELAS ESPECIAIS
   const [showProfile, setShowProfile] = useState(false);
-  const [showPlans, setShowPlans] = useState(false); // NOVO ESTADO
+  const [showPlans, setShowPlans] = useState(false); 
 
+  // Mantém a sessão ativa se o usuário recarregar a página
   useEffect(() => {
     const loggedUser = localStorage.getItem('movieflix_logged_user');
     if (loggedUser) {
@@ -31,12 +34,14 @@ export default function App() {
     }
   }, []);
 
+  // Reseta as telas flutuantes ao navegar pelas abas da Sidebar
   useEffect(() => {
     setSelectedMedia(null);
     setShowProfile(false);
-    setShowPlans(false); // Reseta ao mudar de aba
+    setShowPlans(false); 
   }, [activeTab]);
 
+  // Busca de dados no TMDB baseado na aba ativa
   useEffect(() => {
     if (!currentUser || isLoggingIn) return;
 
@@ -82,13 +87,25 @@ export default function App() {
     setShowPlans(false);
   };
 
-  // NOVA FUNÇÃO: Altera o plano, atualiza o estado e sincroniza o LocalStorage
+  // ATUALIZAÇÃO: Altera o plano e sincroniza as duas chaves do LocalStorage
   const handleUpdatePlan = (newPlan) => {
+    // 1. Atualiza a sessão do usuário ativo no momento
     const updatedUser = { ...currentUser, plan: newPlan };
     setCurrentUser(updatedUser);
     localStorage.setItem('movieflix_logged_user', JSON.stringify(updatedUser));
+
+    // 2. Atualiza os dados dele na lista geral de cadastros
+    const users = JSON.parse(localStorage.getItem('movieflix_users') || '[]');
+    const updatedUsersList = users.map(u => {
+      if (u.email === currentUser.email) {
+        return { ...u, plan: newPlan };
+      }
+      return u;
+    });
+    localStorage.setItem('movieflix_users', JSON.stringify(updatedUsersList));
   };
 
+  // 1. SPLASH SCREEN PÓS-LOGIN
   if (isLoggingIn) {
     return (
       <div className="min-h-screen bg-[#060213] text-gray-100 flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">
@@ -110,6 +127,7 @@ export default function App() {
     );
   }
 
+  // 2. FLUXO DE AUTENTICAÇÃO (LOGIN / CADASTRO)
   if (!currentUser) {
     if (authScreen === 'register') {
       return <Register onNavigateToLogin={() => setAuthScreen('login')} />;
@@ -122,11 +140,13 @@ export default function App() {
     );
   }
 
+  // 3. CATALOGO PRINCIPAL (LOGADO)
   return (
     <div className="min-h-screen bg-[#060213] text-gray-100 antialiased font-sans overflow-x-hidden selection:bg-cyan-500 selection:text-slate-950 relative">
       <div className="absolute top-[-10%] left-[-5%] w-[80vw] md:w-[60vw] h-[80vw] md:h-[60vw] rounded-full bg-purple-600/10 ambient-glow-1 pointer-events-none z-0" />
       <div className="absolute bottom-[10%] right-[-10%] w-[70vw] md:w-[50vw] h-[70vw] md:h-[50vw] rounded-full bg-cyan-600/5 ambient-glow-2 pointer-events-none z-0" />
 
+      {/* Barra lateral fixa */}
       <Sidebar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
@@ -139,10 +159,10 @@ export default function App() {
 
       <main className="px-4 md:pl-36 md:pr-16 pt-4 md:pt-8 pb-24 md:pb-16 min-h-screen max-w-[1700px] mx-auto relative z-10 transition-all duration-300">
         
-        {/* Controle de fluxo condicional expandido para incluir a tela de planos */}
+        {/* Renderização Condicional de Telas Inteiras */}
         {showPlans ? (
           <Plans 
-            currentPlan={currentUser.plan || 'Premium'} 
+            currentPlan={currentUser.plan || 'Gratuito'} 
             onSelectPlan={handleUpdatePlan} 
             onClose={() => {
               setShowPlans(false);
@@ -168,6 +188,7 @@ export default function App() {
           </div>
         ) : (
           <>
+            {/* O Grid de filmes permanece montado no DOM para fixar a rolagem de página original */}
             <Hero 
               item={heroItem} 
               onDetailsClick={(media) => setSelectedMedia(media)} 
@@ -180,8 +201,9 @@ export default function App() {
                 activeTab === 'movies' ? 'Filmes Selecionados' : 'Séries Recomendadas'
               }
               onMediaClick={(media) => setSelectedMedia(media)} 
-                />
+            />
 
+            {/* Modal Fixo de Detalhes por cima do Grid */}
             {selectedMedia && (
               <div className="fixed inset-0 z-50 overflow-y-auto bg-[#060213] px-4 md:pl-36 md:pr-16 pt-4 md:pt-8 pb-24 md:pb-16 animate-fadeIn">
                 <MediaDetails 
