@@ -123,30 +123,23 @@ export default function App() {
       <div className="absolute top-[-10%] left-[-5%] w-[80vw] md:w-[60vw] h-[80vw] md:h-[60vw] rounded-full bg-purple-600/10 ambient-glow-1 pointer-events-none z-0" />
       <div className="absolute bottom-[10%] right-[-10%] w-[70vw] md:w-[50vw] h-[70vw] md:h-[50vw] rounded-full bg-cyan-600/5 ambient-glow-2 pointer-events-none z-0" />
 
-      {/* Sidebar atualizada com a propriedade de clique no Perfil */}
+      {/* Sidebar integrada */}
       <Sidebar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
         onProfileClick={() => {
-          setSelectedMedia(null); // Fecha modal de mídia se estiver aberto
-          setShowProfile(true);   // Exibe os dados do usuário
+          setSelectedMedia(null);
+          setShowProfile(true);
         }}
       />
 
-      <button 
-        onClick={handleLogout}
-        className="absolute top-6 right-6 z-50 bg-white/5 hover:bg-red-500/20 text-gray-400 hover:text-red-400 px-4 py-2 border border-white/10 hover:border-red-500/20 rounded-xl text-xs font-bold tracking-wider transition-all cursor-pointer shadow-lg"
-      >
-        SAIR
-      </button>
-
       <main className="px-4 md:pl-36 md:pr-16 pt-4 md:pt-8 pb-24 md:pb-16 min-h-screen max-w-[1700px] mx-auto relative z-10 transition-all duration-300">
         
-        {/* Nova Condicional: Se o perfil estiver ativo, exibe a tela de Perfil. Caso contrário, segue o fluxo normal */}
         {showProfile ? (
           <UserProfile 
             user={currentUser} 
             onClose={() => setShowProfile(false)} 
+            onLogout={handleLogout} 
           />
         ) : loading ? (
           <div className="h-[80vh] w-full flex items-center justify-center">
@@ -157,27 +150,29 @@ export default function App() {
           </div>
         ) : (
           <>
-            {selectedMedia ? (
-              <MediaDetails 
-                media={selectedMedia} 
-                onClose={() => setSelectedMedia(null)} 
-              />
-            ) : (
-              <>
-                <Hero 
-                  item={heroItem} 
-                  onDetailsClick={(media) => setSelectedMedia(media)} 
-                />
+            {/* O catálogo (Hero e Grid) fica renderizado permanentemente aqui, segurando o seu scroll original */}
+            <Hero 
+              item={heroItem} 
+              onDetailsClick={(media) => setSelectedMedia(media)} 
+            />
 
-                <MediaGrid 
-                  items={data} 
-                  title={
-                    activeTab === 'trending' ? 'Tendências Globais' :
-                    activeTab === 'movies' ? 'Filmes Selecionados' : 'Séries Recomendadas'
-                  }
-                  onMediaClick={(media) => setSelectedMedia(media)} 
+            <MediaGrid 
+              items={data} 
+              title={
+                activeTab === 'trending' ? 'Tendências Globais' :
+                activeTab === 'movies' ? 'Filmes Selecionados' : 'Séries Recomendadas'
+              }
+              onMediaClick={(media) => setSelectedMedia(media)} 
+            />
+
+            {/* MODAL FIXO DE DETALHES: Renderiza por cima da tela sem destruir a lista que está atrás */}
+            {selectedMedia && (
+              <div className="fixed inset-0 z-50 overflow-y-auto bg-[#060213] px-4 md:pl-36 md:pr-16 pt-4 md:pt-8 pb-24 md:pb-16 animate-fadeIn">
+                <MediaDetails 
+                  media={selectedMedia} 
+                  onClose={() => setSelectedMedia(null)} 
                 />
-              </>
+              </div>
             )}
           </>
         )}

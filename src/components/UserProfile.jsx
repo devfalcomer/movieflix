@@ -1,11 +1,11 @@
 import React from 'react';
-import { User, Mail, Calendar, ArrowLeft } from 'lucide-react';
+import { User, Mail, Calendar, ArrowLeft, LogOut } from 'lucide-react';
 
-export default function UserProfile({ user, onClose }) {
+export default function UserProfile({ user, onClose, onLogout }) {
   if (!user) return null;
 
   return (
-    <div className="max-w-2xl mx-auto bg-[#0d091f]/60 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl animate-fadeIn">
+    <div className="max-w-2xl mx-auto bg-[#0d091f]/60 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-3xl shadow-2xl animate-fadeIn">
       
       {/* Cabeçalho com botão para voltar */}
       <div className="flex items-center gap-4 mb-8">
@@ -19,7 +19,7 @@ export default function UserProfile({ user, onClose }) {
       </div>
 
       <div className="flex flex-col items-center text-center sm:text-left sm:flex-row gap-6 pb-8 border-b border-white/5 mb-8">
-        {/* Avatar customizado */}
+        {/* Avatar */}
         <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-cyan-400 to-purple-500 flex items-center justify-center shadow-[0_0_30px_rgba(34,211,238,0.2)]">
           <User size={44} className="text-slate-950" />
         </div>
@@ -31,7 +31,7 @@ export default function UserProfile({ user, onClose }) {
       </div>
 
       {/* Grid com Informações de Detalhe */}
-      <div className="space-y-4">
+      <div className="space-y-4 mb-8">
         <div className="flex items-center gap-4 bg-[#060213]/60 border border-white/5 p-4 rounded-xl">
           <Mail className="text-purple-400" size={20} />
           <div>
@@ -48,6 +48,16 @@ export default function UserProfile({ user, onClose }) {
           </div>
         </div>
       </div>
+
+      {/* BOTÃO SAIR INTEGRADO: Alinhado e seguro no final da área de perfil */}
+      <button
+        onClick={onLogout}
+        className="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold text-sm tracking-wider uppercase py-3 px-4 border border-red-500/20 hover:border-red-500/30 rounded-2xl transition-all cursor-pointer shadow-lg"
+      >
+        <LogOut size={16} />
+        <span>Sair da Conta</span>
+      </button>
+
     </div>
   );
 }

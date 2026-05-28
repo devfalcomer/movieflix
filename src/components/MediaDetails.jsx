@@ -1,10 +1,10 @@
 import React from 'react';
-import { X, Star, Calendar, Film, Tv, Clock } from 'lucide-react';
+import { ArrowLeft, Star, Calendar, Film, Tv } from 'lucide-react';
 
 export default function MediaDetails({ media, onClose }) {
   if (!media) return null;
 
-  // Configuração da imagem de fundo e do poster vindo da API do TMDB
+  // Configuração das imagens vindo da API do TMDB
   const backdropUrl = media.backdrop_path 
     ? `https://image.tmdb.org/t/p/original${media.backdrop_path}` 
     : null;
@@ -13,7 +13,7 @@ export default function MediaDetails({ media, onClose }) {
     ? `https://image.tmdb.org/t/p/w500${media.poster_path}` 
     : null;
 
-  // Formatação simples para o ano de lançamento
+  // Formatação do ano de lançamento
   const releaseYear = media.release_date 
     ? media.release_date.substring(0, 4) 
     : media.first_air_date 
@@ -34,17 +34,20 @@ export default function MediaDetails({ media, onClose }) {
         />
       )}
 
-      {/* Botão Fechar (X) - Posicionado com segurança para não colidir com o botão SAIR */}
-      <button 
-        onClick={onClose}
-        className="absolute top-4 right-4 md:top-6 md:right-6 z-40 p-2.5 bg-[#060213]/80 hover:bg-red-500/20 text-gray-400 hover:text-red-400 border border-white/10 hover:border-red-500/30 rounded-xl transition-all cursor-pointer shadow-lg"
-        title="Fechar detalhes"
-      >
-        <X size={20} />
-      </button>
+      {/* CABEÇALHO: Botão de Voltar posicionado no canto superior esquerdo */}
+      <div className="flex items-center justify-between mb-6 relative z-40">
+        <button 
+          onClick={onClose}
+          className="flex items-center gap-2 px-4 py-2 bg-[#060213]/80 hover:bg-white/10 text-gray-300 hover:text-white border border-white/10 rounded-xl transition-all cursor-pointer shadow-lg text-xs font-bold uppercase tracking-wider"
+          title="Voltar para o catálogo"
+        >
+          <ArrowLeft size={16} />
+          <span>Voltar</span>
+        </button>
+      </div>
 
       {/* Conteúdo Principal em Grid */}
-      <div className="relative z-10 grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6 md:gap-10 items-start mt-8 md:mt-0">
+      <div className="relative z-10 grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6 md:gap-10 items-start">
         
         {/* Poster do Filme/Série */}
         <div className="w-full max-w-[260px] md:max-w-none mx-auto md:mx-0 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.5)] border border-white/10 group">
