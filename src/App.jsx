@@ -6,6 +6,7 @@ import MediaDetails from './components/MediaDetails';
 import Login from './components/Login';
 import Register from './components/Register';
 import { getTrending, getMovies, getSeries } from './services/tmdb';
+import './App.css'; // IMPORTANTE: Importando a animação da barra de progresso
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('trending');
@@ -16,9 +17,12 @@ export default function App() {
   
   // ESTADOS DE AUTENTICAÇÃO
   const [currentUser, setCurrentUser] = useState(null);
-  const [authScreen, setAuthScreen] = useState('login'); // 'login' ou 'register'
+  const [authScreen, setAuthScreen] = useState('login');
+  
+  // Controla o estado de exibição da Splash Screen pós-login
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  // Mantém o usuário logado ao recarregar a página
+  // Mantém a sessão se o usuário recarregar a página
   useEffect(() => {
     const loggedUser = localStorage.getItem('movieflix_logged_user');
     if (loggedUser) {
@@ -26,14 +30,13 @@ export default function App() {
     }
   }, []);
 
-  // Reseta os detalhes caso o usuário mude de aba na Sidebar
+  // Reseta os detalhes ao navegar pelas abas da Sidebar
   useEffect(() => {
     setSelectedMedia(null);
   }, [activeTab]);
 
   useEffect(() => {
-    // Só busca dados da API do TMDB se o usuário estiver logado
-    if (!currentUser) return;
+    if (!currentUser || isLoggingIn) return;
 
     const fetchData = async () => {
       setLoading(true);
@@ -58,11 +61,17 @@ export default function App() {
     };
 
     fetchData();
-  }, [activeTab, currentUser]);
+  }, [activeTab, currentUser, isLoggingIn]);
 
   const handleLoginSuccess = (user) => {
-    setCurrentUser(user);
-    localStorage.setItem('movieflix_logged_user', JSON.stringify(user));
+    setIsLoggingIn(true); // Ativa a tela de Splash Screen
+    
+    // Aguarda 2.5 segundos com o efeito visual antes de destravar o catálogo
+    setTimeout(() => {
+      setCurrentUser(user);
+      localStorage.setItem('movieflix_logged_user', JSON.stringify(user));
+      setIsLoggingIn(false);
+    }, 2500);
   };
 
   const handleLogout = () => {
@@ -71,7 +80,32 @@ export default function App() {
     setAuthScreen('login');
   };
 
-  // FLUXO DE TELAS DE AUTENTICAÇÃO (Se não estiver logado)
+  // 1. RENDERIZAÇÃO DA TELA DE CARREGAMENTO PÓS-LOGIN (Splash Screen)
+  if (isLoggingIn) {
+    return (
+      <div className="min-h-screen bg-[#060213] text-gray-100 flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">
+        <div className="absolute top-[-10%] left-[-5%] w-[60vw] h-[60vw] rounded-full bg-purple-600/10 blur-[100px] animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-cyan-600/5 blur-[100px] animate-pulse" />
+        
+        <div className="text-center relative z-10 space-y-6 animate-fadeIn">
+          <h1 className="text-5xl font-black tracking-tighter text-white drop-shadow-[0_0_35px_rgba(34,211,238,0.3)]">
+            Movie<span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">Flix</span>
+          </h1>
+          
+          <p className="text-gray-400 text-sm tracking-widest uppercase font-bold animate-pulse">
+            Preparando seu catálogo personalizado...
+          </p>
+
+          {/* Container da Barra com a animação vinda do App.css */}
+          <div className="w-48 h-[4px] bg-white/5 rounded-full mx-auto overflow-hidden border border-white/5 relative">
+            <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-cyan-400 to-purple-500 rounded-full w-full animate-loadingBar" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. FLUXO DE AUTENTICAÇÃO (Se não estiver logado)
   if (!currentUser) {
     if (authScreen === 'register') {
       return <Register onNavigateToLogin={() => setAuthScreen('login')} />;
@@ -84,18 +118,14 @@ export default function App() {
     );
   }
 
-  // TELA PRINCIPAL (Se estiver logado)
+  // 3. HOME DO SISTEMA (Se logado com sucesso)
   return (
     <div className="min-h-screen bg-[#060213] text-gray-100 antialiased font-sans overflow-x-hidden selection:bg-cyan-500 selection:text-slate-950 relative">
-      
-      {/* Luzes de Fundo Ambientais Dinâmicas */}
       <div className="absolute top-[-10%] left-[-5%] w-[80vw] md:w-[60vw] h-[80vw] md:h-[60vw] rounded-full bg-purple-600/10 ambient-glow-1 pointer-events-none z-0" />
       <div className="absolute bottom-[10%] right-[-10%] w-[70vw] md:w-[50vw] h-[70vw] md:h-[50vw] rounded-full bg-cyan-600/5 ambient-glow-2 pointer-events-none z-0" />
 
-      {/* Navegação Flutuante Lateral / Inferior */}
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      {/* Botão de Logout Flutuante (Opcional - útil no topo direito) */}
       <button 
         onClick={handleLogout}
         className="absolute top-6 right-6 z-50 bg-white/5 hover:bg-red-500/20 text-gray-400 hover:text-red-400 px-4 py-2 border border-white/10 hover:border-red-500/20 rounded-xl text-xs font-bold tracking-wider transition-all cursor-pointer shadow-lg"
@@ -104,7 +134,6 @@ export default function App() {
       </button>
 
       <main className="px-4 md:pl-36 md:pr-16 pt-4 md:pt-8 pb-24 md:pb-16 min-h-screen max-w-[1700px] mx-auto relative z-10 transition-all duration-300">
-        
         {loading ? (
           <div className="h-[80vh] w-full flex items-center justify-center">
             <div className="relative w-14 h-14">
@@ -114,7 +143,6 @@ export default function App() {
           </div>
         ) : (
           <>
-            {/* Condicional: Se houver uma mídia selecionada, renderiza os Detalhes. Caso contrário, renderiza a Home */}
             {selectedMedia ? (
               <MediaDetails 
                 media={selectedMedia} 
@@ -122,13 +150,11 @@ export default function App() {
               />
             ) : (
               <>
-                {/* Banner Premium */}
                 <Hero 
                   item={heroItem} 
                   onDetailsClick={(media) => setSelectedMedia(media)} 
                 />
 
-                {/* Layout de Grid Assimétrico */}
                 <MediaGrid 
                   items={data} 
                   title={
